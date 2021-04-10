@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
@@ -18,121 +13,123 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import static com.mygdx.game.Main.RESOLUTIONS;
 import com.mygdx.game.mapElements.NullElement;
 
-/**
- *  The World class will manage following features:
- *      - camera transformations
- *      - rendering the game world according to the grid array
- *      - grid array which mapElement is in which place
- */
 public class World {
+    // Stage is handling the viewport and camera stuff
+    private Stage stage;
+    // saving camera reference // not necessary
+    private Camera camera;
+    private ShapeRenderer renderer;
     
-    Stage stage;
-    Camera camera;
-    ShapeRenderer renderer;
+    // The Map Grid
+    private MapElement[][] grid;
     
-    MapElement[][] grid;
+    // Camera Movement Speed
+    public static int cameraSpeed = 10;
     
-    int cameraSpeed = 10;
-    
+    // active resolution from Array in Main
     public static int currentResolution = 5;
     
+    // Activate, deactive rendering the Grid borders | TAB
     public static boolean renderGrid = true;
+    
+    public static int TILE_WIDTH = 48;
+    public static int TILE_HEIGHT = 48;
+    
 
     public World(int tileAmountX, int tileAmountY) {
+        // creating camera / viewport stuff for View
         camera = new OrthographicCamera();
-        stage = new Stage(new FitViewport(RESOLUTIONS[currentResolution*2],RESOLUTIONS[currentResolution*2+1],camera));
+        stage = new Stage(new FitViewport(RESOLUTIONS[currentResolution*2],RESOLUTIONS[currentResolution*2+1], getCamera()));
         renderer = new ShapeRenderer();
+        camera.position.set(tileAmountX*TILE_WIDTH/2, tileAmountY*TILE_HEIGHT/2, 0);
         
+        
+        // Generating empty (/NullElements) Grid
         grid = new MapElement[tileAmountX][tileAmountY];
-        camera.position.set(tileAmountX*32/2, tileAmountY*32/2, 0);
-        
         for(int i = 0; i < grid.length; i++){
             for(int j = 0; j < grid[0].length; j++){
                 grid[i][j] = new NullElement();
             }
         }
+        
     }
     
+    // Handing the resizing of the window
     public void resize(int width, int height){
-        stage.getViewport().update(width, height);
+        getStage().getViewport().update(width, height);
     }
     
     public void render(){
-        camera.update();
-        renderer.setProjectionMatrix(camera.combined);
+        getCamera().update();
+        getRenderer().setProjectionMatrix(getCamera().combined);
 
-        // RENDERING THE GREEN UNDERGROUND /////////////////////////////////
-            renderer.begin(ShapeRenderer.ShapeType.Filled);
-            renderer.setColor(139f/255f, 90f/255f, 43f/255f, 1);
-            renderer.rect(0,0, grid.length*32, grid[0].length*32);
-            renderer.end();
-        ////////////////////////////////////////////////////////////////////
-        
         // RENDERING THE MapElement UNDERGROUND ////////////////////////////
-            stage.getBatch().setProjectionMatrix(camera.combined);
-            stage.getBatch().begin();
-            for(int i = 0; i < grid.length; i++){
-                for(int j = 0; j < grid[0].length; j++){
-                    grid[i][j].render(0, stage.getBatch(), i*32, j*32);
+            getStage().getBatch().setProjectionMatrix(getCamera().combined);
+            getStage().getBatch().begin();
+            for(int i = 0; i < getGrid().length; i++){
+                for(int j = 0; j < getGrid()[0].length; j++){
+                    getGrid()[i][j].render(0, getStage().getBatch(), i*TILE_WIDTH, j*TILE_HEIGHT);
                 }
             }
-            stage.getBatch().end();
+            getStage().getBatch().end();
         ////////////////////////////////////////////////////////////////////
 
+        // Getting, which grid tile the player has selected atm
         Vector2 selectedGrid = getGridElement(Gdx.input.getX(), Gdx.input.getY());
-        // RENDERING THE GRID IN GENERAL ///////////////////////////////////
+        
+        // RENDERING THE GRID BORDERS //////////////////////////////////////
         if(renderGrid){
-            renderer.begin(ShapeRenderer.ShapeType.Line);
-            renderer.setColor(Color.LIGHT_GRAY);
-            for(int i = 0; i < grid.length; i++){
-                for(int j = 0; j < grid[0].length; j++){
-                    renderer.rect(i*32,j*32,32,32);
+            getRenderer().begin(ShapeRenderer.ShapeType.Line);
+            getRenderer().setColor(Color.LIGHT_GRAY);
+            for(int i = 0; i < getGrid().length; i++){
+                for(int j = 0; j < getGrid()[0].length; j++){
+                    getRenderer().rect(i*TILE_WIDTH,j*TILE_HEIGHT,TILE_WIDTH,TILE_HEIGHT);
                 }
             }
-            renderer.end();
+            getRenderer().end();
         }
         ////////////////////////////////////////////////////////////////////
 
         // SELECTED GRID FIELD /////////////////////////////////////////////
-        if(selectedGrid.x >= 0 && selectedGrid.x < grid.length && selectedGrid.y >= 0 && selectedGrid.y < grid[0].length){
+        if(selectedGrid.x >= 0 && selectedGrid.x < getGrid().length && selectedGrid.y >= 0 && selectedGrid.y < getGrid()[0].length){
             if(renderGrid){
                 Gdx.gl.glEnable(GL20.GL_BLEND);
                 Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-                renderer.begin(ShapeRenderer.ShapeType.Filled);
-                renderer.setColor(1f,0,0,0.5f);
-                renderer.rect(selectedGrid.x*32, selectedGrid.y*32, 32,32);
-                renderer.end();
+                getRenderer().begin(ShapeRenderer.ShapeType.Filled);
+                getRenderer().setColor(1f,0,0,0.5f);
+                getRenderer().rect(selectedGrid.x*TILE_WIDTH, selectedGrid.y*TILE_HEIGHT, TILE_WIDTH,TILE_HEIGHT);
+                getRenderer().end();
                 Gdx.gl.glDisable(GL20.GL_BLEND);
-                renderer.begin(ShapeRenderer.ShapeType.Line);
-                renderer.setColor(Color.RED);
-                renderer.rect(selectedGrid.x*32, selectedGrid.y*32, 32,32);
-                renderer.end();
+                getRenderer().begin(ShapeRenderer.ShapeType.Line);
+                getRenderer().setColor(Color.RED);
+                getRenderer().rect(selectedGrid.x*TILE_WIDTH, selectedGrid.y*TILE_HEIGHT, TILE_WIDTH,TILE_HEIGHT);
+                getRenderer().end();
             }
             else{
-                renderer.begin(ShapeRenderer.ShapeType.Line);
-                renderer.setColor(Color.RED);
-                renderer.rect(selectedGrid.x*32, selectedGrid.y*32, 32,32);
-                renderer.end();
+                getRenderer().begin(ShapeRenderer.ShapeType.Line);
+                getRenderer().setColor(Color.RED);
+                getRenderer().rect(selectedGrid.x*TILE_WIDTH, selectedGrid.y*TILE_HEIGHT, TILE_WIDTH,TILE_HEIGHT);
+                getRenderer().end();
             }
         }
         ////////////////////////////////////////////////////////////////////
         
         // CAMERA MOVEMENT /////////////////////////////////////////////////
             if(Gdx.input.isKeyPressed(Input.Keys.D)){
-                if(camera.position.x + RESOLUTIONS[currentResolution*2]/2 < grid.length*32)
-                camera.translate(cameraSpeed, 0, 0);
+                if(getCamera().position.x + RESOLUTIONS[currentResolution*2]/2 < getGrid().length*TILE_WIDTH)
+                getCamera().translate(cameraSpeed, 0, 0);
             }
             if(Gdx.input.isKeyPressed(Input.Keys.A)){
-                if(camera.position.x - RESOLUTIONS[currentResolution*2]/2 > 0)
-                camera.translate(-cameraSpeed, 0, 0);
+                if(getCamera().position.x - RESOLUTIONS[currentResolution*2]/2 > 0)
+                getCamera().translate(-cameraSpeed, 0, 0);
             }
             if(Gdx.input.isKeyPressed(Input.Keys.W)){
-                if(camera.position.y + RESOLUTIONS[currentResolution*2+1]/2 < grid[0].length*32)
-                camera.translate(0, cameraSpeed, 0);
+                if(getCamera().position.y + RESOLUTIONS[currentResolution*2+1]/2 < getGrid()[0].length*TILE_HEIGHT)
+                getCamera().translate(0, cameraSpeed, 0);
             }
             if(Gdx.input.isKeyPressed(Input.Keys.S)){
-                if(camera.position.y - RESOLUTIONS[currentResolution*2+1]/2 > 0)
-                camera.translate(0, -cameraSpeed, 0);
+                if(getCamera().position.y - RESOLUTIONS[currentResolution*2+1]/2 > 0)
+                getCamera().translate(0, -cameraSpeed, 0);
             }
             // ZOOMING with KEYS
             if(Gdx.input.isKeyJustPressed(Input.Keys.UP)){
@@ -151,7 +148,7 @@ public class World {
         // BUILDING A SELECTED MAPELEMENT //////////////////////////////////
         if(UI.selectedBuilding != -1){
             if(Gdx.input.isButtonPressed(Input.Buttons.LEFT)){
-                placeInGrid(MapElement.getNewMapElementById(UI.mapElements[UI.selectedBuilding].id), (int)selectedGrid.x, (int)selectedGrid.y);
+                placeInGrid(MapElement.getNewMapElementById(UI.mapElements[UI.selectedBuilding].getId()), (int)selectedGrid.x, (int)selectedGrid.y);
             }
             
             if(Gdx.input.isButtonPressed(Input.Buttons.RIGHT)){
@@ -161,18 +158,20 @@ public class World {
         ////////////////////////////////////////////////////////////////////
     }
     
+    // Tries to place the selected building on the grid
+        // if there is space and the player has enough money
     public void placeInGrid(MapElement me, int x, int y){
-        if(Player.money >= me.buildingCost){
+        if(Player.money >= me.getBuildingCost()){
             if(me instanceof NullElement){
                 if(!(grid[x][y] instanceof NullElement)){
-                    grid[x][y] = me;
-                    Player.money -= me.buildingCost;
+                    getGrid()[x][y] = me;
+                    Player.money -= me.getBuildingCost();
                 }
             }
             else{
-                if(grid[x][y] instanceof NullElement){
-                    grid[x][y] = me;
-                    Player.money -= me.buildingCost;
+                if(getGrid()[x][y] instanceof NullElement){
+                    getGrid()[x][y] = me;
+                    Player.money -= me.getBuildingCost();
                 }
             }
         }
@@ -188,9 +187,67 @@ public class World {
         ////////////////////////////////////////////////////////////////////////
     }
     
+    // calculates from absolute mouse input coordinates what relative grid tile 
+    // the player has selected atm
     public Vector2 getGridElement(int inputX, int inputY){
-        Vector2 mousePos = stage.getViewport().unproject(new Vector2(inputX, inputY));
-        return new Vector2((float)Math.floor(mousePos.x/32), (float)Math.floor(mousePos.y/32));
+        Vector2 mousePos = getStage().getViewport().unproject(new Vector2(inputX, inputY));
+        return new Vector2((float)Math.floor(mousePos.x/TILE_WIDTH), (float)Math.floor(mousePos.y/TILE_HEIGHT));
+    }
+
+    /**
+     * @return the stage
+     */
+    public Stage getStage() {
+        return stage;
+    }
+
+    /**
+     * @param stage the stage to set
+     */
+    public void setStage(Stage stage) {
+        this.stage = stage;
+    }
+
+    /**
+     * @return the camera
+     */
+    public Camera getCamera() {
+        return camera;
+    }
+
+    /**
+     * @param camera the camera to set
+     */
+    public void setCamera(Camera camera) {
+        this.camera = camera;
+    }
+
+    /**
+     * @return the renderer
+     */
+    public ShapeRenderer getRenderer() {
+        return renderer;
+    }
+
+    /**
+     * @param renderer the renderer to set
+     */
+    public void setRenderer(ShapeRenderer renderer) {
+        this.renderer = renderer;
+    }
+
+    /**
+     * @return the grid
+     */
+    public MapElement[][] getGrid() {
+        return grid;
+    }
+
+    /**
+     * @param grid the grid to set
+     */
+    public void setGrid(MapElement[][] grid) {
+        this.grid = grid;
     }
     
 

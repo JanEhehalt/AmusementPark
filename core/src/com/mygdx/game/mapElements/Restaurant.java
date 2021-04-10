@@ -14,7 +14,7 @@ import com.mygdx.game.MapElement;
  */
 public class Restaurant extends MapElement{
     
-    int foodCost;
+    private int foodCost;
 
     public Restaurant(int buildingCost, int buildingTime, int id) {
         super(id, buildingCost, buildingTime, null);
@@ -23,5 +23,19 @@ public class Restaurant extends MapElement{
     @Override
     public void render(float delta, Batch batch, int x, int y) {
         super.render(delta, batch, x, y); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * @return the foodCost
+     */
+    public int getFoodCost() {
+        return foodCost;
+    }
+
+    /**
+     * @param foodCost the foodCost to set
+     */
+    public void setFoodCost(int foodCost) {
+        this.foodCost = foodCost;
     }
 }

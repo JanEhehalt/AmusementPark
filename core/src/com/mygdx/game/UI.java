@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
@@ -15,33 +10,23 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.utils.viewport.Viewport;
 
-/**
- *
- * @author janeh
- */
 public class UI {
     
-    public static int selectedBuilding = 1;
+    public static int selectedBuilding = -1;
+    public static MapElement[] mapElements;
     
-    ShapeRenderer UIrenderer;
-    Batch UIbatch;
+    private ShapeRenderer UIrenderer;
+    private Batch UIbatch;
+    private BitmapFont font;
     
-    BitmapFont font;
-    
-    Viewport worldViewport;
-    
-    Texture buildingsUi;
-    
-    public static MapElement[] mapElements = new MapElement[12];
     
 
-    public UI(Viewport WorldViewport) {
+    public UI() {
         UIrenderer = new ShapeRenderer();
-        worldViewport = WorldViewport;
         UIbatch = new SpriteBatch();
         
+        // generating the font
         FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("font.ttf"));
         FreeTypeFontGenerator.FreeTypeFontParameter parameter = new FreeTypeFontGenerator.FreeTypeFontParameter();
         parameter.size = 21;
@@ -49,7 +34,9 @@ public class UI {
         generator.dispose();
         font.getData().setScale(2f);
         font.setColor(Color.BLACK);
-        
+
+        // Creating all the MapElements which can be built and will be part of the UI
+        mapElements = new MapElement[12];
         mapElements[0] = MapElement.getNewMapElementById(0);
         mapElements[1] = MapElement.getNewMapElementById(1);
         mapElements[2] = MapElement.getNewMapElementById(2);
@@ -66,64 +53,67 @@ public class UI {
     
     public void render(){
         
-        
+        // RENDERING MONEY BOX /////////////////////////////////////////////////
         Gdx.gl.glEnable(GL20.GL_BLEND);
         Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        UIrenderer.begin(ShapeRenderer.ShapeType.Filled);
-        UIrenderer.setColor(0,0,0,0.8f);
-        UIrenderer.rect(Gdx.graphics.getWidth()-300, Gdx.graphics.getHeight()-100, 250, 70);
-        UIrenderer.end();
+        getUIrenderer().begin(ShapeRenderer.ShapeType.Filled);
+        getUIrenderer().setColor(0,0,0,0.8f);
+        getUIrenderer().rect(Gdx.graphics.getWidth()-300, Gdx.graphics.getHeight()-100, 250, 70);
+        getUIrenderer().end();
         Gdx.gl.glDisable(GL20.GL_BLEND);
-        UIbatch.begin();
-        font.setColor(Color.WHITE);
-        font.draw(UIbatch, Player.money+" $", Gdx.graphics.getWidth()-280, Gdx.graphics.getHeight()-65, 210, 1, false);
-        UIbatch.end();
-        UIrenderer.begin(ShapeRenderer.ShapeType.Filled);
+        getUIbatch().begin();
+        getFont().setColor(Color.WHITE);
+        getFont().draw(getUIbatch(), Player.money+" $", Gdx.graphics.getWidth()-280, Gdx.graphics.getHeight()-65, 210, 1, false);
+        getUIbatch().end();
+        getUIrenderer().begin(ShapeRenderer.ShapeType.Filled);
+        ////////////////////////////////////////////////////////////////////////
         
-        
-        UIrenderer.setColor(Color.WHITE);
+        // RENDERING BUILDINGS UI //////////////////////////////////////////////
+        getUIrenderer().setColor(Color.WHITE);
         for(int i = 0; i < mapElements.length; i++){
-            UIrenderer.rect(20, Gdx.graphics.getHeight() - 80 - i*72-8, 72, 72);
+            getUIrenderer().rect(20, Gdx.graphics.getHeight() - 80 - i*72-8, 72, 72);
         }
         if(selectedBuilding != -1){
-            UIrenderer.setColor(Color.RED);
-            UIrenderer.rect(20, Gdx.graphics.getHeight() - 80 - selectedBuilding*72-8, 72, 72);
+            getUIrenderer().setColor(Color.RED);
+            getUIrenderer().rect(20, Gdx.graphics.getHeight() - 80 - selectedBuilding*72-8, 72, 72);
             
-            UIrenderer.end();
-            UIbatch.begin();
-            font.setColor(Color.CLEAR);
-            float width = font.draw(UIbatch, mapElements[selectedBuilding].name, 0, 0).width;
-            float priceWidth = font.draw(UIbatch, mapElements[selectedBuilding].buildingCost+" $", 0, 0).width;
-            UIbatch.end();
+            getUIrenderer().end();
+            getUIbatch().begin();
+            getFont().setColor(Color.CLEAR);
+            float width = getFont().draw(getUIbatch(), mapElements[selectedBuilding].getName(), 0, 0).width;
+            float priceWidth = getFont().draw(getUIbatch(), mapElements[selectedBuilding].getBuildingCost()+" $", 0, 0).width;
+            getUIbatch().end();
             
             Gdx.gl.glEnable(GL20.GL_BLEND);
             Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-            UIrenderer.begin(ShapeRenderer.ShapeType.Filled);
-            UIrenderer.setColor(0,0,0, 0.5f);
-            UIrenderer.rect(92, Gdx.graphics.getHeight() - 80 - selectedBuilding*72-8, width+7, 72);
-            UIrenderer.rect(90+width+5-priceWidth, Gdx.graphics.getHeight() - 80 - (selectedBuilding+1)*72-8, priceWidth+4, 72);
-            UIrenderer.end();
+            getUIrenderer().begin(ShapeRenderer.ShapeType.Filled);
+            getUIrenderer().setColor(0,0,0, 0.5f);
+            getUIrenderer().rect(92, Gdx.graphics.getHeight() - 80 - selectedBuilding*72-8, width+7, 72);
+            getUIrenderer().rect(90+width+5-priceWidth, Gdx.graphics.getHeight() - 80 - (selectedBuilding+1)*72-8, priceWidth+4, 72);
+            getUIrenderer().end();
             Gdx.gl.glDisable(GL20.GL_BLEND);
-            UIrenderer.setColor(Color.WHITE);
+            getUIrenderer().setColor(Color.WHITE);
             
             
-            UIbatch.begin();
-            font.setColor(Color.WHITE);
-            font.draw(UIbatch, mapElements[selectedBuilding].name, 96, Gdx.graphics.getHeight() - 80 - selectedBuilding*72+40, width, 1, false);
-            font.draw(UIbatch, mapElements[selectedBuilding].buildingCost+" $", 92+width+5-priceWidth, Gdx.graphics.getHeight() - 80 - (selectedBuilding+1)*72+40, priceWidth, 1, false);
+            getUIbatch().begin();
+            getFont().setColor(Color.WHITE);
+            getFont().draw(getUIbatch(), mapElements[selectedBuilding].getName(), 96, Gdx.graphics.getHeight() - 80 - selectedBuilding*72+40, width, 1, false);
+            getFont().draw(getUIbatch(), mapElements[selectedBuilding].getBuildingCost()+" $", 92+width+5-priceWidth, Gdx.graphics.getHeight() - 80 - (selectedBuilding+1)*72+40, priceWidth, 1, false);
             
-            UIbatch.end();
-            UIrenderer.begin(ShapeRenderer.ShapeType.Filled);
+            getUIbatch().end();
+            getUIrenderer().begin(ShapeRenderer.ShapeType.Filled);
         }
-        UIrenderer.end();
-        UIbatch.begin();
+        getUIrenderer().end();
+        getUIbatch().begin();
         
         for(int i = 0; i < mapElements.length; i++){
-            mapElements[i].renderScaled(0, UIbatch, 24, Gdx.graphics.getHeight() - 80 - i*72-4, 2f);
+            mapElements[i].renderScaled(0, getUIbatch(), 24, Gdx.graphics.getHeight() - 80 - i*72-4, 2f);
         }
         
-        UIbatch.end(); 
+        getUIbatch().end(); 
+        ////////////////////////////////////////////////////////////////////////
         
+        // SELECTING BUILDING IS ALSO POSSIBLE BY NUM_KEYS /////////////////////
         if(Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
             selectedBuilding = 0;
         }
@@ -154,12 +144,14 @@ public class UI {
         if(Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)){
             selectedBuilding = 9;
         }
-        if(Gdx.input.isKeyJustPressed(71)){
+        if(Gdx.input.isKeyJustPressed(71)){ // KEYCODE ß\?
             selectedBuilding = 10;
         }
+        ////////////////////////////////////////////////////////////////////////
         
     }
     
+    // Handling the scrolling through the buildings
     public void scroll(float amountX, float amountY){
         if(amountY < 0){
             if(selectedBuilding > 0){
@@ -171,6 +163,48 @@ public class UI {
                 selectedBuilding++;
             }
         }
+    }
+
+    /**
+     * @return the UIrenderer
+     */
+    public ShapeRenderer getUIrenderer() {
+        return UIrenderer;
+    }
+
+    /**
+     * @param UIrenderer the UIrenderer to set
+     */
+    public void setUIrenderer(ShapeRenderer UIrenderer) {
+        this.UIrenderer = UIrenderer;
+    }
+
+    /**
+     * @return the UIbatch
+     */
+    public Batch getUIbatch() {
+        return UIbatch;
+    }
+
+    /**
+     * @param UIbatch the UIbatch to set
+     */
+    public void setUIbatch(Batch UIbatch) {
+        this.UIbatch = UIbatch;
+    }
+
+    /**
+     * @return the font
+     */
+    public BitmapFont getFont() {
+        return font;
+    }
+
+    /**
+     * @param font the font to set
+     */
+    public void setFont(BitmapFont font) {
+        this.font = font;
     }
     
 }

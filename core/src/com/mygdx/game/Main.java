@@ -30,32 +30,38 @@ public class Main extends ApplicationAdapter implements InputProcessor{
         
 	@Override
 	public void create () {
+            MapElementData.initCostpermin();
             
-            world = new World(50,50);
+            world = new World(40,23);
             ui = new UI();
-            
             // basically this just says, that the Main class is handling the Inoput
                 // We outsourced that to the Objects themself (except of scroll)
             Gdx.input.setInputProcessor(this);
         }
-
+        
+    // Method is being called when the user is resizing the window | Width and Height new Bounds of window
         @Override
         public void resize(int width, int height) {
-            world.resize(width,height); // Method is being called when the user is resizing the window
+            world.resize(width,height); 
+            ui.resize(width,height);    
             super.resize(width, height);        // adapts the Viewport resolution to new window size
         }
 
-        
+        // THE GAME LOOP, CALLED 60 TIMES PER SEC
 	@Override
 	public void render () {
             Gdx.gl.glClearColor(0f/255f, 0f/255f, 0f/255f, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             
+            // UPDATES THE MONEY THE PLAYER HAS WITH MONEY_OFFSET
+            Player.updateMoney();
+            
             // Rendering the world first
             world.render();
+            
             // Rendering the UI later (on top)
             ui.render();
-
+            
 	}
 	
         // Called when the programm is being closed
@@ -63,7 +69,7 @@ public class Main extends ApplicationAdapter implements InputProcessor{
 	@Override
 	public void dispose () {
             world.getStage().dispose();
-            ui.getUIbatch().dispose();
+            ui.stage.getBatch().dispose();
             ui.getUIrenderer().dispose();
             ui.getFont().dispose();
             for(MapElement me : ui.mapElements){
@@ -77,10 +83,11 @@ public class Main extends ApplicationAdapter implements InputProcessor{
 	}
 
         // NOT USED - HANDLED IN RENDER ////////////////////////////////////////
+        // EXCEPT OF SCROLL (CAN'T BE HANDLED ON THE FLY) //////////////////////
+        
         @Override
         public boolean keyDown(int keycode) {
-            System.out.println(keycode);
-            return true;
+            return false;
         }
 
         @Override

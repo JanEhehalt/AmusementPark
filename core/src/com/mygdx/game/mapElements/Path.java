@@ -1,21 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.mygdx.game.mapElements;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.mygdx.game.MapElement;
 
-/**
- *
- * @author janeh
- */
 public class Path extends MapElement{
     
-    public Path(int buildingCost, int buildingTime, int id) {
-        super(id, buildingCost, buildingTime, null);
+    /**
+     * Paths are for the Npcs (Guests)
+     *  They can only walk on paths
+     *  Pathfinding in Graph class
+     */
+    
+    public Path(int id) {
+        super(id);
     }
 
     

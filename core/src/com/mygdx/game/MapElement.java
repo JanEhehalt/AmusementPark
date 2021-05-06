@@ -7,11 +7,15 @@ import com.mygdx.game.mapElements.Garden;
 import com.mygdx.game.mapElements.NullElement;
 import com.mygdx.game.mapElements.Path;
 import com.mygdx.game.mapElements.Restaurant;
+import com.mygdx.game.mapElements.StaticObject;
 
 /**
  *  Elements:
  *      
  *      id: name
+ * 
+ *      BuildingOversize:
+ *      -2: BuildingOversize
  * 
  *      NullElement:
  *      -1: NullElement
@@ -35,6 +39,9 @@ import com.mygdx.game.mapElements.Restaurant;
  *      Paths:
  *      30: normal Path
  * 
+ *      StaticObjects:
+ *      40: Entrance
+ * 
  */
 public abstract class MapElement {
     
@@ -44,88 +51,90 @@ public abstract class MapElement {
     private int buildingTime;
     private String name;
     private Texture t;
+    private int width;
+    private int height;
+    
+    // Timer which is counting up the time in order to know, when the player has
+    // to pay the operationCost
+    private float operationCostTimer;
     
     
-    // The cost of every building by ID
-    private static int[] buildingCosts = {
-        // GARDENS
-        15, 10, 5, 0, 0, 0, 0, 0, 0, 0,
-        // RESTAURANTS
-        500, 200, 300, 0, 0, 0, 0, 0, 0, 0,
-        // GAMES
-        1000, 5000, 2500, 3000, 0, 0, 0, 0, 0, 0,
-        // PATH
-        10
-        
-    };
-            
-    // The building time of every building by ID
-    private static int[] buildingTimes = {
-        // GARDENS
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // RESTAURANTS
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // GAMES
-        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        // PATH
-        0
-    };
     
-    // The name of every building by ID
-    private static String[] names = {
-        // GARDENS
-        "Tree", "Shrub", "Grass", "", "", "", "", "", "", "",
-        // RESTAURANTS
-        "French Fries", "Ice Cream", "Soda Shop", "", "", "", "", "", "", "",
-        // GAMES
-        "Ferris Wheel", "Roller Coaster", "Mini Zoo", "Freefall Tower", "", "", "", "", "", "",
-        // PATH
-        "Path"
-    };
-    
-    public MapElement(int id, int buildingCost, int buildingTime, String name){
+    public MapElement(int id){
         this.id = id;
-        // if Building cost wasn't initiated, take it from the Array
-        if(buildingCost == 0){
-            this.buildingCost = buildingCosts[id];
-        }
-        else{
-            this.buildingCost = buildingCost;
-        }
         
-        // if Name wasn't initiated, so take it from the Array
-        if(name == null){
-            this.name = names[id];
+        // values for id -2 and -1 can't be stores in array for obvious reasons...
+        // so we have to catch those ids here
+        if(id == -1){
+            this.buildingCost = 5;
+            this.name = "Delete";
+            this.buildingTime = 0;
+            this.width = 1;
+            this.height = 1;
         }
+        else if(id == -2){
+            this.buildingCost = 0;
+            this.name = "Oversize";
+            this.buildingTime = 0;
+            this.width = 1;
+            this.height = 1;
+        }
+        // other ids values are recieved from the MapElementData classes Arrays
         else{
-            this.name = name;
+            this.buildingCost = MapElementData.buildingCosts[id];
+            this.name = MapElementData.names[id];
+            this.buildingTime = MapElementData.buildingTimes[id];
+            this.width = MapElementData.buildingWidth[id];
+            this.height = MapElementData.buildingHeight[id];
         }
-        
-        // TODO: if buildingTime wasn't initiated, so take it from the Array
-        this.buildingTime = buildingTime;
         
         // Every ID has a dedicated .png which id called 'id+".png"'
         t = new Texture(id+".png");
     }
     
-    // Drawing its texture (stretching it to Tile size)
-    public void render(float delta, Batch batch, int x, int y){
-        batch.draw(getT(), x, y, World.TILE_WIDTH, World.TILE_HEIGHT);
+    // act() just checks, whether the player has to pay operationCost or not
+    // is called every render loop
+    public void act(float delta){
+        if(id != -1 && id != -2){
+            operationCostTimer += delta;
+            if(operationCostTimer > MapElementData.operationCostFrequency[id]){
+                Player.moneyoffset -= MapElementData.operationCost[id];
+                operationCostTimer = 0;
+            } 
+        }
+            
     }
     
-    // Draws the texture certainly scaled
-        // Used in UI
+    // Drawing its texture (stretching it to Tile size)
+    public void render(float delta, Batch batch, int x, int y){
+        batch.draw(getT(), x, y, World.TILE_WIDTH * (width), World.TILE_HEIGHT * (height));
+    }
+    
+    // Draws the texture scaled by amount 'scale'
+        // mostly used for UI
     public void renderScaled(float delta, Batch batch, int x, int y, float scale){
         batch.draw(getT(), x, y, getT().getWidth()*scale, getT().getWidth()*scale);
     }
     
-    public static MapElement getNewMapElementById(int id){
-        if(id == -1) return new NullElement();
-        else if(id <= 0 && id < 10) return new Garden(0, 0, id);
-        else if(id >= 10 && id < 20) return new Restaurant(0, 0, id);
-        else if(id == 30) return new Path(0, 0, id);
-        else return new Game(0,0,id);
+    public void renderTo(float delta, Batch batch, int x, int y, int width, int height){
+        batch.draw(getT(), x, y, width, height);
     }
+    
+    
+    public static MapElement getNewMapElementById(int id){
+        if(id == -1) return new NullElement(id);
+        else if(id >= 0 && id < 10) return new Garden(id);
+        else if(id >= 10 && id < 20) return new Restaurant(id);
+        else if(id >= 20 && id < 30) return new Game(id);
+        else if(id >= 30 && id < 40) return new Path(id);
+        else if(id >= 40 && id < 50) return new StaticObject(id);
+        
+        return null;
+    }
+    
+    /**
+     * GETTERS + SETTERS
+     */
 
     /**
      * @return the id
@@ -198,46 +207,33 @@ public abstract class MapElement {
     }
 
     /**
-     * @return the buildingCosts
+     * @return the width
      */
-    public static int[] getBuildingCosts() {
-        return buildingCosts;
+    public int getWidth() {
+        return width;
     }
 
     /**
-     * @param aBuildingCosts the buildingCosts to set
+     * @param width the width to set
      */
-    public static void setBuildingCosts(int[] aBuildingCosts) {
-        buildingCosts = aBuildingCosts;
+    public void setWidth(int width) {
+        this.width = width;
     }
 
     /**
-     * @return the buildingTimes
+     * @return the height
      */
-    public static int[] getBuildingTimes() {
-        return buildingTimes;
+    public int getHeight() {
+        return height;
     }
 
     /**
-     * @param aBuildingTimes the buildingTimes to set
+     * @param height the height to set
      */
-    public static void setBuildingTimes(int[] aBuildingTimes) {
-        buildingTimes = aBuildingTimes;
-    }
-
-    /**
-     * @return the names
-     */
-    public static String[] getNames() {
-        return names;
-    }
-
-    /**
-     * @param aNames the names to set
-     */
-    public static void setNames(String[] aNames) {
-        names = aNames;
+    public void setHeight(int height) {
+        this.height = height;
     }
     
     
+
 }

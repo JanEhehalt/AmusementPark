@@ -3,15 +3,15 @@ package com.mygdx.game.mapElements;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.mygdx.game.MapElement;
 
-public class NullElement extends MapElement{
-
-    /**
-     *  NullElement is just an empty grid element
-     *      The player can only build on NullElements
-     *      The texture is the brown dirt texture
-     */
+public class StaticObject extends MapElement{
     
-    public NullElement(int id) {
+    /**
+     * The StaticObjects are Objects of the map
+     *  The Player can't build on StaticObjects
+     *  The entrance for example is a StaticObject
+     */
+
+    public StaticObject(int id) {
         super(id);
     }
 

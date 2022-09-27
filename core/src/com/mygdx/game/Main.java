@@ -1,12 +1,15 @@
 package com.mygdx.game;
 
-import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.mygdx.game.npcs.Cleaner;
+import com.mygdx.game.npcs.Repairman;
 
 public class Main extends ApplicationAdapter implements InputProcessor{
+
+        public static int worldWidth = 80;
+        public static int worldHeight = 46;
     
         // AVAILABLE RESOLUTIONS FOR ZOOMING (all 16:9)
         public static int[] RESOLUTIONS={
@@ -21,7 +24,9 @@ public class Main extends ApplicationAdapter implements InputProcessor{
             1280, 720,
             1366, 768,
             1600, 900,
-            1920, 1080
+            1920, 1080,
+            3840, 2160,
+            7680, 4320
         };
         
         // We have a world layer and the ui layer on top
@@ -32,8 +37,9 @@ public class Main extends ApplicationAdapter implements InputProcessor{
 	public void create () {
             MapElementData.initCostpermin();
             
-            world = new World(40,23);
+            world = new World(worldWidth,worldHeight);
             ui = new UI();
+
             // basically this just says, that the Main class is handling the Inoput
                 // We outsourced that to the Objects themself (except of scroll)
             Gdx.input.setInputProcessor(this);
@@ -58,9 +64,34 @@ public class Main extends ApplicationAdapter implements InputProcessor{
             
             // Rendering the world first
             world.render();
-            
+
+            int cleanerCounter = 0;
+            int repairmanCounter = 0;
+            for(Actor a : world.getStage().getActors()){
+                if(a instanceof Cleaner){
+                    cleanerCounter++;
+                }
+                if(a instanceof Repairman){
+                    repairmanCounter++;
+                }
+            }
+
             // Rendering the UI later (on top)
-            ui.render();
+            ui.render(repairmanCounter, cleanerCounter);
+
+            if(Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+                Gdx.app.exit();
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+                boolean fullScreen = Gdx.graphics.isFullscreen();
+                Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
+                if (fullScreen)
+                    //Gdx.graphics.setWindowedMode(currentMode.width, currentMode.height);
+                    Gdx.graphics.setWindowedMode(1280, 720);
+                else
+                    Gdx.graphics.setFullscreenMode(currentMode);
+            }
             
 	}
 	

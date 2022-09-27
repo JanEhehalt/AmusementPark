@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.game.npcs.Cleaner;
@@ -81,7 +82,7 @@ public class UI {
         mapElements[12] = MapElement.getNewMapElementById(-1);
     }
     
-    public void render(){
+    public void render(int repairmanCounter, int cleanerCounter){
         stage.getCamera().update();
         UIrenderer.setProjectionMatrix(stage.getCamera().combined);
         stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
@@ -147,11 +148,11 @@ public class UI {
         
         // RENDERING BUILDINGS UI //////////////////////////////////////////////
         getFont().getData().setScale(2f);
-        getUIrenderer().setColor(Color.SKY);
+        getUIrenderer().setColor(Color.BLACK);
         getUIrenderer().begin(ShapeRenderer.ShapeType.Filled);
         
         // Drawing One big Rect where all the Icons will be displayed on
-        getUIrenderer().rect(20, UI_HEIGHT - 80 - (mapElements.length-1)*72-8, 72, mapElements.length*72);
+        getUIrenderer().rect(18, UI_HEIGHT - 82 - (mapElements.length-1)*72-8, 76, mapElements.length*74);
         
         // Drawing More stuff for the currently selected Building
         if(selectedBuilding != -1){
@@ -198,7 +199,7 @@ public class UI {
         
         // SPAWN BUTTON FOR CLEANER AND REPAIRMAN
         getUIrenderer().begin(ShapeRenderer.ShapeType.Filled);
-        getUIrenderer().setColor(Color.SKY);
+        getUIrenderer().setColor(Color.BLACK);
         getUIrenderer().rect(96+200, 964, 144, 48);
         getUIrenderer().rect(96+200, 1012, 48, 48);
         getUIrenderer().rect(192+200, 1012, 48, 48);
@@ -209,16 +210,21 @@ public class UI {
         
         
         getUIrenderer().setColor(Color.WHITE);
-        getUIrenderer().rect(144+200-2, 964-2, 48+4, 48+4);
-        getUIrenderer().rect(144+200-2, 856-2, 48+4, 48+4);
+        getUIrenderer().rect(144+200-2, 964, 48+4, 96);
+        getUIrenderer().rect(144+200-2, 856, 48+4, 96);
         
         getUIrenderer().end();
         
         stage.getBatch().begin();
-        
+
+
         getFont().setColor(Color.BLACK);
-        getFont().draw(stage.getBatch(), "R", 104+200, 1055);
-        getFont().draw(stage.getBatch(), "T", 200+200, 1055);
+        getFont().draw(stage.getBatch(), ""+cleanerCounter, 352, 947);
+        getFont().draw(stage.getBatch(), ""+repairmanCounter, 352, 1055);
+        
+        getFont().setColor(Color.WHITE);
+        getFont().draw(stage.getBatch(), "R", 304, 1055);
+        getFont().draw(stage.getBatch(), "T", 400, 1055);
         
         getFont().draw(stage.getBatch(), "F", 104+200, 947);
         getFont().draw(stage.getBatch(), "G", 200+200, 947);
@@ -231,8 +237,8 @@ public class UI {
         getFont().draw(stage.getBatch(), "+", 200+200, 899);
         getFont().draw(stage.getBatch(), "+", 200+200, 1007);
         
-        stage.getBatch().draw(Repairman.t, 144+200-2, 964-2, 48+4, 48+4);
-        stage.getBatch().draw(Cleaner.t, 144+200-2, 856-2, 48+4, 48+4);
+        stage.getBatch().draw(Repairman.t, 144+200-2, 964, 48+4, 48+4);
+        stage.getBatch().draw(Cleaner.t, 144+200-2, 856, 48+4, 48+4);
         
         
         // Rendering all the Icons on top of the big Rect

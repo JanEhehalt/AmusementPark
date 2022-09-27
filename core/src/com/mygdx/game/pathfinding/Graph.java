@@ -77,7 +77,9 @@ public class Graph {
                 // only MapElements with Id higher than 9 will be added to the graph (-> no BuildingOversize (-2))
                 // and the entrance will be added to the graph. (checking entrance extra, because entrance would be -2)
                 if(map[x][y].getId() >= 10 || ( x == World.ENTRANCE_X+2 && y == World.ENTRANCE_Y)){
-                    nodeAmount++;
+                    if(map[x][y].getId() != 40){
+                        nodeAmount++;
+                    }
                 }
             }
         }
@@ -95,22 +97,24 @@ public class Graph {
                 // only MapElements with Id higher than 9 will be added to the graph (-> no BuildingOversize (-2))
                 // and the entrance will be added to the graph. (checking entrance extra, because entrance would be -2)
                 if(map[x][y].getId() >= 10 || (x == World.ENTRANCE_X+2 && y == World.ENTRANCE_Y)){
-                    // adding node to graph
-                    nodes[i] = new Node(x,y, i, map[x][y].getId());
-                    for(int j = 0; j < nodes.length; j++){
-                        if(nodes[j] != null){
-                            // Adding the edges to every node
-                            if((x-1 == nodes[j].getX() && y == nodes[j].getY()) || 
-                               (x+1 == nodes[j].getX() && y == nodes[j].getY()) ||
-                               (x == nodes[j].getX() && y-1 == nodes[j].getY()) ||
-                               (x == nodes[j].getX() && y+1 == nodes[j].getY()) ){
-                                edges[i][j] = 1;
-                                edges[j][i] = 1;
+                    if(map[x][y].getId() != 40){
+                        // adding node to graph
+                        nodes[i] = new Node(x,y, i, map[x][y].getId());
+                        for(int j = 0; j < nodes.length; j++){
+                            if(nodes[j] != null){
+                                // Adding the edges to every node
+                                if((x-1 == nodes[j].getX() && y == nodes[j].getY()) ||
+                                   (x+1 == nodes[j].getX() && y == nodes[j].getY()) ||
+                                   (x == nodes[j].getX() && y-1 == nodes[j].getY()) ||
+                                   (x == nodes[j].getX() && y+1 == nodes[j].getY()) ){
+                                    edges[i][j] = 1;
+                                    edges[j][i] = 1;
 
+                                }
                             }
                         }
+                        i++;
                     }
-                    i++;
                 }
             }
         }
@@ -160,6 +164,8 @@ public class Graph {
      *          and returns null (-> because no way found here)
      * 
      *
+     */
+
     public ArrayList<Node> findPath(Node start, Node goal, ArrayList<Node> path, boolean[] visited){
         
         if(start == null || goal == null || path == null || visited == null){
@@ -169,17 +175,14 @@ public class Graph {
         path.add(start);
         visited[start.getI()] = true;
         if(start == goal){
-            if(path.size() > 15 && !isInEntrance(goal.getX(), goal.getY())){
-                return null;
-            }
             return path;
         }
         for(int i = 0; i < getEdges().length; i++){
             if(getEdges()[i][start.getI()] == 1 && !visited[i]){
                 // pathfinding will only allow to step on entrance node or paths or on the goal node (restaurant e.g.)
-                if( isInEntrance(getNodes()[i].getX(), getNodes()[i].getY()) ||
+                if( isEntrance(getNodes()[i].getX(), getNodes()[i].getY()) ||
                     (getNodes()[i].getBuildingId() >= 30 && getNodes()[i].getBuildingId() <= 39) || getNodes()[i].getBuildingId() == goal.getBuildingId()
-                        || isInEntrance(goal.getX(), goal.getY())
+                        || isEntrance(goal.getX(), goal.getY())
                     ){
                     ArrayList<Node> temp = findPath(getNodes()[i], goal, path, visited);
                     if(temp == null){
@@ -193,9 +196,8 @@ public class Graph {
         path.remove(start);
         return null;
     }
-    */
 
-    public ArrayList<Node> findPath(Node start, Node goal, ArrayList<Node> path, boolean[] visited){
+    public ArrayList<Node> findPath(Node start, Node goal, ArrayList<Node> path, boolean[] visited, int a){
         if(start == null || goal == null || path == null || visited == null){
             return null;
         }
@@ -227,12 +229,19 @@ public class Graph {
     // just for shortening the check whether the x and y coordinates are the entrance
     public boolean isInEntrance(int x, int y){
         if(x >= World.ENTRANCE_X && x < World.ENTRANCE_X + MapElementData.buildingWidth[40] &&
-            y >= World.ENTRANCE_Y && y < World.ENTRANCE_Y + MapElementData.buildingHeight[40]){
+            y >= World.ENTRANCE_Y && y <= World.ENTRANCE_Y + MapElementData.buildingHeight[40]){
             return true;
         }
         return false;
     }
-    
+
+    public boolean isEntrance(int x, int y){
+        if(x == World.ENTRANCE_X && y == World.ENTRANCE_Y){
+            return true;
+        }
+        return false;
+    }
+
     // checks a paths and returns false if the structure of the graph has changes, so that the
     // old path can't be followed any more
     public boolean pathValid(ArrayList<Node> path){

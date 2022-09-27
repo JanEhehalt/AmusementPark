@@ -1,5 +1,6 @@
 package com.mygdx.game;
 
+import com.mygdx.game.mapElements.*;
 import com.mygdx.game.npcs.Npc;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -13,11 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import static com.mygdx.game.Main.RESOLUTIONS;
-import com.mygdx.game.mapElements.BuildingOversize;
-import com.mygdx.game.mapElements.Game;
-import com.mygdx.game.mapElements.NullElement;
-import com.mygdx.game.mapElements.Path;
-import com.mygdx.game.mapElements.StaticObject;
+
 import com.mygdx.game.npcs.Cleaner;
 import com.mygdx.game.npcs.Repairman;
 import com.mygdx.game.pathfinding.Graph;
@@ -70,6 +67,15 @@ public class World {
         for(int i = 0; i < grid.length; i++){
             for(int j = 0; j < grid[0].length; j++){
                 grid[i][j] = new NullElement(-1);
+                //grid[i][j] = new Garden(0);
+            }
+        }
+
+        camera.position.set((ENTRANCE_X+2)*TILE_WIDTH, (ENTRANCE_Y-4)*TILE_HEIGHT, 0);
+
+        for(int i = ENTRANCE_X; i < ENTRANCE_X+MapElementData.buildingWidth[40]; i++){
+            for(int j = ENTRANCE_Y-8; j < ENTRANCE_Y+MapElementData.buildingHeight[40]; j++) {
+                placeInGrid(MapElement.getNewMapElementById(-1), i, j);
             }
         }
         placeInGrid(MapElement.getNewMapElementById(40), ENTRANCE_X, ENTRANCE_Y);
@@ -122,7 +128,7 @@ public class World {
         
         // UPDATING THE PATH GRAPH /////////////////////////////////////////
         graph = Graph.generateGraphFromMap(grid);
-        graph.printGraph();
+        //graph.printGraph();
         for(Actor a : stage.getActors()){
             if(a instanceof Npc){
                 ((Npc) a).setGraph(graph);

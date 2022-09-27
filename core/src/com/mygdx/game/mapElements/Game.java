@@ -115,7 +115,7 @@ public class Game extends MapElement {
         }
         
         if(Math.random() < 0.0002){
-            System.out.println("BREAK");
+            //System.out.println("BREAK");
             setState(2);
         }
         super.act(delta); //To change body of generated methods, choose Tools | Templates.

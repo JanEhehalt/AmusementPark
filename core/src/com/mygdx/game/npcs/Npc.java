@@ -15,6 +15,7 @@ import com.mygdx.game.mapElements.Game;
 import com.mygdx.game.pathfinding.Graph;
 import com.mygdx.game.pathfinding.Node;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class Npc extends Actor{
     
@@ -41,10 +42,17 @@ public class Npc extends Actor{
     private double elapsedTime;
     
     // textures for the different directions the player can face
-    private final Texture rightt = new Texture("+npc.png");
-    private final Texture leftt = new Texture("-npc.png");
-    private final Texture centert = new Texture("npc.png");
-    private final Texture backt = new Texture("npcback.png");
+    private static final Texture rightt = new Texture("+npc.png");
+    private static final Texture leftt = new Texture("-npc.png");
+    private static final Texture centert = new Texture("npc.png");
+    private static final Texture backt = new Texture("npcback.png");
+
+    private static final Vector2 originalSize = new Vector2(16, 16);
+
+    private static final Vector2 size = new Vector2(12,12);
+    private static final Vector2 moodBubbleSize = new Vector2(size.x, size.y);
+
+    private Vector2 textureOffset = new Vector2((float)(Math.random()-0.5)*0.6f * World.TILE_WIDTH, (float)(Math.random()-0.5)*0.6f * World.TILE_HEIGHT);
     
     // Every Npc stores an graph of the map which get updated every render loop
     private Graph graph;
@@ -88,7 +96,7 @@ public class Npc extends Actor{
         // sets x coordinate, y coordinate and width and height
         // methods and variables come from abstract actor 
         // x = entrance of the map, y = entrance of the map, width = texture width, height = texture height 
-        setBounds((World.ENTRANCE_X+2) * World.TILE_WIDTH + World.TILE_WIDTH/2, World.ENTRANCE_Y * World.TILE_HEIGHT + World.TILE_HEIGHT/2, 16, 16);
+        setBounds((World.ENTRANCE_X+2) * World.TILE_WIDTH + World.TILE_WIDTH/2, World.ENTRANCE_Y * World.TILE_HEIGHT + World.TILE_HEIGHT/2, size.x, size.y);
         
         this.xGrid = (int)(getX() / World.TILE_WIDTH);
         this.yGrid = (int)(getX() / World.TILE_HEIGHT);
@@ -102,6 +110,9 @@ public class Npc extends Actor{
         //translating current position to grid position
         setxGrid((int)(getX()/World.TILE_WIDTH));
         setyGrid((int)(getY()/World.TILE_HEIGHT));
+
+        speed = 0.7f + (float)(Math.sin(elapsedTime)) * 0.2f;
+
         if(getState() != 5){
         switch(getState()){
             /**
@@ -165,17 +176,23 @@ public class Npc extends Actor{
                         }
                     }
                 }
-                if(Math.random() < 0.002 && state == 0){
+                if(Math.random() < 0.001 && state == 0){
                     if(world.getGrid()[getxGrid()][getyGrid()].getId() == 30){
                         Node trashcan = graph.findViableTrashcan(getxGrid(), getyGrid());
                         if(trashcan == null){
                             world.getGrid()[getxGrid()][getyGrid()] = MapElement.getNewMapElementById(31);
                         }
                         else{
-                            setGoal(trashcan);    
-                            setPath(getGraph().findPath(getGraph().getNodeWith(getxGrid(), getyGrid()), trashcan, new ArrayList<Node>(), new boolean[getGraph().getNodes().length]));
-                            setPathPart(0);
-                            setPOI(null);
+                            ArrayList<Node> path = getGraph().findPath(getGraph().getNodeWith(getxGrid(), getyGrid()), trashcan, new ArrayList<Node>(), new boolean[getGraph().getNodes().length]);
+                            if(path.size() > 15){
+                                world.getGrid()[getxGrid()][getyGrid()] = MapElement.getNewMapElementById(31);
+                            }
+                            else{
+                                setGoal(trashcan);
+                                setPath(path);
+                                setPathPart(0);
+                                setPOI(null);
+                            }
                         }
                     }
                 }
@@ -341,7 +358,7 @@ public class Npc extends Actor{
              * look at it, you'll understand :D
              */
             
-            setPOI(new Vector2(getPath().get(getPathPart()).getX() * World.TILE_WIDTH + World.TILE_WIDTH/2, getPath().get(getPathPart()).getY() * World.TILE_HEIGHT + World.TILE_HEIGHT/2));
+            setPOI(new Vector2(getPath().get(getPathPart()).getX() * World.TILE_WIDTH + World.TILE_WIDTH/2 , getPath().get(getPathPart()).getY() * World.TILE_HEIGHT + World.TILE_HEIGHT/2));
             
             double angle = StaticMath.calculateAngle((int)getX() + (int)(getWidth()/2), (int)getY() + (int)(getHeight()/2), (int)getPOI().x, (int)getPOI().y);
             movementX = (float)Math.cos(angle)*getSpeed();
@@ -374,11 +391,25 @@ public class Npc extends Actor{
              * if he's happy and has a path etc. his mood will get positive
              * he will influence the parks general mood in a good way
              */
-            if(mood < 0) mood = 0;
             if(mood < 5){
                 mood+=0.5;
             }
         }
+
+        if(state != 0 && state != 3){
+            if(path != null){
+                if(path.size() > 20){
+                    if(mood > -5){
+                        mood -= 0.5;
+                    }
+                }
+                else{
+                    if(mood < 0) mood = 0;
+                }
+            }
+        }
+
+
          // state 4: leaving
         if(getState() == 4){
             if(goal == null){
@@ -417,17 +448,17 @@ public class Npc extends Actor{
         if(state != 5){
         // drawing the texture which fits best to the players movement
         if(movementX > 0.2){
-            batch.draw(rightt, getX(), getY());
+            batch.draw(rightt, getX() + textureOffset.x, getY()+ textureOffset.y, size.x, size.y);
         }
         else if(movementX < -0.2){
-            batch.draw(leftt, getX(), getY());
+            batch.draw(leftt,getX() + textureOffset.x, getY()+ textureOffset.y, size.x, size.y);
         }
         else{
             if(movementY > 0.3){
-                batch.draw(backt, getX(), getY());
+                batch.draw(backt,getX() + textureOffset.x, getY()+ textureOffset.y, size.x, size.y);
             }
             else{
-                batch.draw(centert, getX(), getY());
+                batch.draw(centert,getX() + textureOffset.x, getY()+ textureOffset.y, size.x, size.y);
             }
         }
         
@@ -443,9 +474,9 @@ public class Npc extends Actor{
                     getGraph().getRenderer().line(getPOI().x, getPOI().y, getX()+getWidth()/2, getY()+getHeight()/2);
                     getGraph().getRenderer().end();
                     getGraph().getRenderer().begin(ShapeRenderer.ShapeType.Filled);
-                    getGraph().getRenderer().circle(getPOI().x, getPOI().y, 5);
+                    getGraph().getRenderer().circle(getPOI().x, getPOI().y, 2.5f);
                     getGraph().getRenderer().setColor(Color.ORANGE);
-                    getGraph().getRenderer().circle(getGoal().getX()*World.TILE_WIDTH + World.TILE_WIDTH/2, getGoal().getY()*World.TILE_HEIGHT + World.TILE_HEIGHT/2, 3);
+                    getGraph().getRenderer().circle(getGoal().getX()*World.TILE_WIDTH + World.TILE_WIDTH/2, getGoal().getY()*World.TILE_HEIGHT + World.TILE_HEIGHT/2, 2);
                     getGraph().getRenderer().end();
                 }
             }
@@ -454,19 +485,16 @@ public class Npc extends Actor{
         
         // if state == 0 there is a certain change for showing the bubble
         if(state == 0){
-            if(Math.random() < 0.01 && Math.random() < 0.05) {
-                setMoodBubble(!isMoodBubble());
-            }
             if(moodBubble){
-                batch.draw(getMoodBubbleTexture()[getState()], getX()+getWidth()-2, getY()+getHeight()-2);
+                batch.draw(getMoodBubbleTexture()[getState()], getX()+getWidth()-2 + textureOffset.x, getY()+getHeight()-2 + textureOffset.y, moodBubbleSize.x, moodBubbleSize.y);
             }
-            if(getGoal() != null && getGoal().getBuildingId() == 32){
-                batch.draw(getMoodBubbleTexture()[5], getX()+getWidth()-2, getY()+getHeight()-2);
+            if(getGoal() != null && getGoal().getBuildingId() == 32 && moodBubble){
+                batch.draw(getMoodBubbleTexture()[5], getX()+getWidth()-2 + textureOffset.x, getY()+getHeight()-2 + textureOffset.y, moodBubbleSize.x, moodBubbleSize.y);
             }
         }
         // if state not 0 the bubble will always show
-        else{
-            batch.draw(getMoodBubbleTexture()[getState()], getX()+getWidth()-2, getY()+getHeight()-2);
+        else if(moodBubble){
+            batch.draw(getMoodBubbleTexture()[getState()], getX()+getWidth()-2 + textureOffset.x, getY()+getHeight()-2 + textureOffset.y, moodBubbleSize.x, moodBubbleSize.y);
         }
         }
         super.draw(batch, parentAlpha); //To change body of generated methods, choose Tools | Templates.
@@ -487,6 +515,10 @@ public class Npc extends Actor{
      * @param state the state to set
      */
     public void setState(int state) {
+        setMoodBubble(false);
+        if(Math.random() < 0.05){
+            setMoodBubble(true);
+        }
         this.state = state;
     }
 

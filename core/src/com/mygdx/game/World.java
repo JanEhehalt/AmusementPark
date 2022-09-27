@@ -38,7 +38,7 @@ public class World {
     // active resolution from Array in Main
     public static int currentResolution = 5;
     
-    // Activate, deactive rendering the Grid borders | TAB
+    // Activate the rendering of the Grid borders | TAB
     public static boolean renderGrid = false;
     
     // Making TILE_WIDTH and HEIGHT Variable, could just be changed any time
@@ -63,6 +63,7 @@ public class World {
         
         ENTRANCE_X = tileAmountX/2-2;
         ENTRANCE_Y = tileAmountY-2;
+
      
         // Generating empty (/NullElements) Grid
         grid = new MapElement[tileAmountX][tileAmountY];
@@ -74,11 +75,7 @@ public class World {
         placeInGrid(MapElement.getNewMapElementById(40), ENTRANCE_X, ENTRANCE_Y);
         
         graph = Graph.generateGraphFromMap(grid);
-        
-        /*
-        stage.addActor(new Repairman(graph, this));
-        stage.addActor(new Cleaner(graph, this));
-        */
+
     }
     
     // Handing the resizing of the window
@@ -125,6 +122,7 @@ public class World {
         
         // UPDATING THE PATH GRAPH /////////////////////////////////////////
         graph = Graph.generateGraphFromMap(grid);
+        graph.printGraph();
         for(Actor a : stage.getActors()){
             if(a instanceof Npc){
                 ((Npc) a).setGraph(graph);
@@ -173,6 +171,7 @@ public class World {
 
         // Getting, which grid tile the player has selected atm
         Vector2 selectedGrid = getGridElement(Gdx.input.getX(), Gdx.input.getY());
+        //System.out.println(selectedGrid);
         
         // RENDERING THE GRID BORDERS //////////////////////////////////////
         /*

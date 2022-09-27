@@ -1,5 +1,9 @@
 package com.mygdx.game.pathfinding;
 
+import com.mygdx.game.World;
+
+import java.util.ArrayList;
+
 public class Node {
     // has x and y pos on map
     private int x;
@@ -8,14 +12,30 @@ public class Node {
     private int i;
     // saving, which building the node is representing
     private int buildingId;
+
+    public ArrayList<Node> neighbours;
+
+    public boolean visited = false;
+    public Node prev = null;
     
     public Node(int x, int y, int i, int buildingId){
         this.x = x;
         this.y = y;
         this.i = i;
         this.buildingId = buildingId;
+        this.neighbours = new ArrayList<>();
     }
-    
+
+    public void printNode(){
+        if(x != World.ENTRANCE_X && y != World.ENTRANCE_Y)
+        System.out.println(x + " " + y + " Neighbours: " + neighbours);
+    }
+
+    public void addNeighbour(Node n){
+        neighbours.add(n);
+    }
+
+
     /**
      * GETTERS + SETTERS
      */

@@ -6,7 +6,7 @@ public class Player {
      * Just the general stats of the park
      */
     
-    public static int money = 2500;
+    public static int money = 1000000;
     
     // money offset allows the money counter to shrink smoothly
     // it is the value the money needs to be de- or increased.

@@ -35,6 +35,12 @@ public class Graph {
         this.edges = edges;
         this.map = basis;
     }
+
+    public void printGraph(){
+        for(Node n : nodes){
+            n.printNode();
+        }
+    }
     
     public void draw(Batch batch){
         // Drawing the graph edges as red lines
@@ -100,6 +106,7 @@ public class Graph {
                                (x == nodes[j].getX() && y+1 == nodes[j].getY()) ){
                                 edges[i][j] = 1;
                                 edges[j][i] = 1;
+
                             }
                         }
                     }
@@ -107,6 +114,19 @@ public class Graph {
                 }
             }
         }
+        for(Node n : nodes){
+            for(Node j : nodes){
+                if(n != j){
+                    if((n.getX()-1 == j.getX() && n.getY() == j.getY()) ||
+                        (n.getX()+1 == j.getX() && n.getY() == j.getY()) ||
+                        (n.getX() == j.getX() && n.getY()-1 == j.getY()) ||
+                        (n.getX() == j.getX() && n.getY()+1 == j.getY()) ){
+                        n.addNeighbour(j);
+                    }
+                }
+            }
+        }
+
         return new Graph(nodes, edges, map);
     }
     
@@ -139,7 +159,7 @@ public class Graph {
      *          this node removes itself from the path stack
      *          and returns null (-> because no way found here)
      * 
-     */
+     *
     public ArrayList<Node> findPath(Node start, Node goal, ArrayList<Node> path, boolean[] visited){
         
         if(start == null || goal == null || path == null || visited == null){
@@ -173,7 +193,37 @@ public class Graph {
         path.remove(start);
         return null;
     }
-    
+    */
+
+    public ArrayList<Node> findPath(Node start, Node goal, ArrayList<Node> path, boolean[] visited){
+        if(start == null || goal == null || path == null || visited == null){
+            return null;
+        }
+
+        return (ArrayList<Node>) new ShortestPath(start, goal).bfs();
+    }
+
+    public ArrayList<Node> getAdj(Node n, Node goal){
+        ArrayList<Node> adj = new ArrayList<>();
+        adj.add(getNodeWith(n.getX()+1, n.getY()));
+        adj.add(getNodeWith(n.getX()-1, n.getY()));
+        adj.add(getNodeWith(n.getX(), n.getY()+1));
+        adj.add(getNodeWith(n.getX(), n.getY()-1));
+
+        for(Node i : adj){
+            if(isInEntrance(i.getX(), i.getY()) || (i.getBuildingId() >= 30 && i.getBuildingId() <= 39)
+                    || i.getBuildingId() == goal.getBuildingId() || isInEntrance(goal.getX(), goal.getY())
+            ){
+
+            }
+            else{
+                adj.remove(i);
+            }
+        }
+
+        return adj;
+    }
+
     // just for shortening the check whether the x and y coordinates are the entrance
     public boolean isInEntrance(int x, int y){
         if(x >= World.ENTRANCE_X && x < World.ENTRANCE_X + MapElementData.buildingWidth[40] &&
@@ -214,7 +264,9 @@ public class Graph {
         Collections.shuffle(nodes);
         for(Node n : nodes){
             if(findPath(getNodeWith(xGrid, yGrid), n, new ArrayList<Node>(), new boolean[this.nodes.length]) != null){
-                return n;
+                if(n.getX() != World.ENTRANCE_X && n.getY() != World.ENTRANCE_Y){
+                    return n;
+                }
             }
         }
         return null;
@@ -273,7 +325,7 @@ public class Graph {
             getRenderer().end();
         }
     }
-    
+
     /**
      * GETTERS AND SETTERS
      */

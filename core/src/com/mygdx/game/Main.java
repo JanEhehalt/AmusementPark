@@ -83,7 +83,7 @@ public class Main extends ApplicationAdapter implements InputProcessor{
                 Gdx.app.exit();
             }
 
-            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F11)){
                 boolean fullScreen = Gdx.graphics.isFullscreen();
                 Graphics.DisplayMode currentMode = Gdx.graphics.getDisplayMode();
                 if (fullScreen)
